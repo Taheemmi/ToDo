@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace ToDoList
 {
@@ -17,10 +18,8 @@ namespace ToDoList
             }
         }
 
-
         static void Main(string[] args)
         {
-
             Console.WriteLine("Login"); // user login
 
             Console.Write("Enter Username: \n");
@@ -76,8 +75,55 @@ namespace ToDoList
                                 Console.WriteLine($"{i + 1}. {tasks[i]}");
                             }
                             Console.WriteLine();
+
+                            Console.WriteLine("Please select an option");
+                            Console.WriteLine("1. Delete task");
+                            Console.WriteLine("2. Update task");
+                            Console.WriteLine("3. Return to main menu");
+
+                            string subChoice = Console.ReadLine() ?? "";
+                            
+                            switch (subChoice)
+                            {
+                                case "1":
+                                    Console.WriteLine("Enter the task you want to delete");
+                                    if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= tasks.Count)
+                                    {
+                                        tasks.RemoveAt(taskNumberToDelete - 1);
+                                        Console.WriteLine("Task has been deleted successfuly");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("It dont exist m8 \n");
+                                    }
+                                    break;
+                                case "2":
+                                    Console.WriteLine("Which task will you like to update?");
+                                    if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= tasks.Count)
+                                    {
+                                        Console.WriteLine("Enter the new task descripion: ");
+                                        string newTask = Console.ReadLine() ?? "";
+                                        tasks[taskNumberToUpdate - 1] = newTask;
+                                        Console.WriteLine("Task updated succesfully\n ");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Invalid option, Try again");
+
+                                    }
+                                    break;
+
+                                case "3":
+                                    break;
+
+                                default:
+                                    Console.WriteLine("Invalid option. Please Try again!");
+                                    break;
+                            }
                         }
                         break;
+
+
                     case "3": // exit application and save tasks
                         SaveTasksToFile("tasks.txt", tasks);
                         Console.WriteLine("Exiting the To-Do List App. Goodbye!");
