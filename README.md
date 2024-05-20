@@ -8,12 +8,12 @@ what needs to be added -
 
 2. error handling ✅
 
-3. unit testing  
+3. create and update existing tasks ✅
 
 4. task catagories 
 
-5. task filtering and sorting 
+5.Task priority 
 
-6. Task priority 
+6. task filtering and sorting 
 
 7. Deadline managment
