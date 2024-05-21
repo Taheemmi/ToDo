@@ -206,10 +206,10 @@ namespace ToDoList
                     _ => taskToUpdate.Category
                 };
 
-                Console.WriteLine();
-                Console.WriteLine();
-                Console.WriteLine();
-                Console.WriteLine();
+                Console.WriteLine("Select the priority");
+                Console.WriteLine("1. High");
+                Console.WriteLine("2. Medium");
+                Console.WriteLine("3. Low");
                 string priorityChoice = Console.ReadLine() ?? "";
                 taskToUpdate.Priority = priorityChoice switch
                 {
