@@ -176,7 +176,7 @@ namespace ToDoList
         static void UpdateTask()
         {
             Console.Write("Enter the number of the task you want to update: ");
-            if (!int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= tasks.Count)
+            if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= tasks.Count)
             {
                 Task taskToUpdate = tasks[taskNumberToUpdate - 1];
                 Console.Write("Enter the new description: ");
