@@ -10,7 +10,7 @@ what needs to be added -
 
 3. create and update existing tasks ✅
 
-4. task catagories 
+4. task catagories ✅ (need to be listed instead of being displayed as {categories}
 
 5. Task priority 
 
