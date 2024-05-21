@@ -10,10 +10,10 @@ what needs to be added -
 
 3. create and update existing tasks ✅
 
-4. task catagories ✅ (need to be listed instead of being displayed as {categories}
+4. task catagories ✅
+   
+6. Task priority 
 
-5. Task priority 
+7. task filtering and sorting 
 
-6. task filtering and sorting 
-
-7. Deadline managment
+8. Deadline managment
