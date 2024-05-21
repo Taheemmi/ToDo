@@ -1,28 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.IO;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+
 
 namespace ToDoList
 {
     public class Task
     {
-        public string Description { get; set; }
+        public string Description { get; set; } // get is to return property value and set is a new value
         public string Category { get; set; }
+        public string Priority { get; set; }
 
-        public Task(string description, string category)
+        public Task(string description, string category, string priority)
         {
             Description = description;
             Category = category;
-
+            Priority = priority;
         }
 
         public override string ToString()
         {
-            return $"{Description} {{Category}}";
+            return $"{Description} ({Category}) - Priority: {Priority}";
         }
     }
 
@@ -33,7 +31,7 @@ namespace ToDoList
 
         public static bool Authenticate(string inputUsername, string inputPassword) // checks if the username and password are correct
         {
-            return inputUsername == Username.Trim() && inputPassword == Password.Trim(); //white
+            return inputUsername.Trim() == Username && inputPassword.Trim() == Password; //white
         }
     }
 
@@ -49,7 +47,7 @@ namespace ToDoList
             string username = Console.ReadLine().Trim(); // trim whitespace from input
 
             Console.Write("Enter Password: \n");
-            string password = Console.ReadLine().Trim();// trim whitespace from input
+            string password = Console.ReadLine().Trim(); // trim whitespace from input
 
             if (userAuth.Authenticate(username, password))
             {
@@ -115,14 +113,28 @@ namespace ToDoList
                 _ => "SideQuests"
             };
 
-            Task newTask = new Task(description, category);
+            Console.WriteLine("Select the priority: ");
+            Console.WriteLine("1. High");
+            Console.WriteLine("2. Medium");
+            Console.WriteLine("3. Low");
+            string priorityChoice = Console.ReadLine() ?? "";
+
+            string priority = priorityChoice switch
+            {
+                "1" => "High",
+                "2" => "Medium",
+                "3" => "Low",
+                 _ => "Unspecified"
+            };
+
+            Task newTask = new Task(description, category, priority);
             tasks.Add(newTask);
             Console.WriteLine("Task connected sucessfully");
         }
 
         static void ViewTasks()
         {
-            if (tasks.Count == 0)
+            if (tasks.Count == 0) // if there are no tasks detected then this will display
             {
                 Console.WriteLine("No tasks found\n");
                 return;
@@ -139,7 +151,7 @@ namespace ToDoList
             Console.WriteLine("1. Delete a Task");
             Console.WriteLine("2. Update a Task");
             Console.WriteLine("3. Go back");
-            String option = Console.ReadLine() ?? "";
+            string option = Console.ReadLine() ?? ""; // reads user input and assigns to the number at the starts
 
             switch (option)
             {
@@ -180,24 +192,41 @@ namespace ToDoList
             {
                 Task taskToUpdate = tasks[taskNumberToUpdate - 1];
                 Console.Write("Enter the new description: ");
-
                 taskToUpdate.Description = Console.ReadLine() ?? "";
+
+
                 Console.WriteLine("Select the new category: ");
                 Console.WriteLine("1. Work");
                 Console.WriteLine("2. Personal");
                 string categoryChoice = Console.ReadLine() ?? "";
                 taskToUpdate.Category = categoryChoice switch
-
                 {
                     "1" => "Work",
                     "2" => "Personal",
                     _ => taskToUpdate.Category
                 };
+
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                string priorityChoice = Console.ReadLine() ?? "";
+                taskToUpdate.Priority = priorityChoice switch
+                {
+                    "1" => "High",
+                    "2" => "Medium",
+                    "3" => "Low",
+                    _ => taskToUpdate.Priority
+
+                };
+
+
+
                 Console.WriteLine("Task Updated Successfully!\n");
             }
             else
             {
-                Console.WriteLine("Dunno mate \n");
+                Console.WriteLine("Dunno mate \n"); // if something unexpected happpens
             }
 
         }
@@ -215,9 +244,9 @@ namespace ToDoList
                     foreach (var line in lines)
                     {
                         string[] parts = line.Split('|');
-                        if (parts.Length == 2)
+                        if (parts.Length == 3)
                         {
-                            tasks.Add(new Task(parts[0], parts[1]));
+                            tasks.Add(new Task(parts[0], parts[1], parts[2]));
                         }
                     }
                 }
@@ -238,7 +267,7 @@ namespace ToDoList
                 foreach (var task in tasks)
 
                 {
-                    lines.Add($"{task.Description}|{task.Category}");
+                    lines.Add($"{task.Description}|{task.Category}|{task.Priority}");
                 }
                 File.WriteAllLines(filename, lines);
             }
