@@ -9,12 +9,12 @@ namespace ToDoList
     {
         public class userAuth //login credentials
         {
-            private const string Username = "user";
-            private const string Password = "root";
+            private const string Username = "user"; // this is the username to login
+            private const string Password = "root"; // this is the password
 
-            public static bool Authenticate(string inputUsername, string inputPassword)
+            public static bool Authenticate(string inputUsername, string inputPassword) // checks if the username and password are correct
             {
-                return inputUsername == Username.Trim() && inputPassword == Password.Trim();
+                return inputUsername == Username.Trim() && inputPassword == Password.Trim(); //white
             }
         }
 
@@ -36,7 +36,7 @@ namespace ToDoList
             }
             else
             {
-                Console.WriteLine("Incorrect username or password please try again");
+                Console.WriteLine("Incorrect username or password please try again"); // if credentials do not match
                 return; //exit 
             }
 
@@ -59,7 +59,7 @@ namespace ToDoList
                     case "1": // to add tasks
                         Console.Write("Enter the task: ");
                         string task = Console.ReadLine() ?? ""; // Use null-coalescing operator
-                        tasks.Add(task);
+                        tasks.Add(task); // add task function '.add' is used to write on txt file
                         Console.WriteLine("Task added successfully!\n");
                         break;
                     case "2": // to view tasks
@@ -83,11 +83,11 @@ namespace ToDoList
 
                             string subChoice = Console.ReadLine() ?? "";
                             
-                            switch (subChoice)
+                            switch (subChoice) // when entering view tasks, this menu appears
                             {
                                 case "1":
                                     Console.WriteLine("Enter the task you want to delete");
-                                    if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= tasks.Count)
+                                    if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= tasks.Count) // this string reads the users input and convert the string to an interger. If successful the method is set to 1 for true and if not it is set to 0. Then checks if larger than 0.
                                     {
                                         tasks.RemoveAt(taskNumberToDelete - 1);
                                         Console.WriteLine("Task has been deleted successfuly");
@@ -99,11 +99,11 @@ namespace ToDoList
                                     break;
                                 case "2":
                                     Console.WriteLine("Which task will you like to update?");
-                                    if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= tasks.Count)
+                                    if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= tasks.Count) // same as taskNumberToDelete but replaced with update
                                     {
                                         Console.WriteLine("Enter the new task descripion: ");
-                                        string newTask = Console.ReadLine() ?? "";
-                                        tasks[taskNumberToUpdate - 1] = newTask;
+                                        string newTask = Console.ReadLine() ?? ""; // reads user input to replace existing task
+                                        tasks[taskNumberToUpdate - 1] = newTask; 
                                         Console.WriteLine("Task updated succesfully\n ");
                                     }
                                     else
@@ -135,7 +135,7 @@ namespace ToDoList
             }
         }
 
-        static List<string> LoadTasksFromFile(string filename)
+        static List<string> LoadTasksFromFile(string filename) // loading in tasks
         {
             List<string> tasks = new List<string>();
 
@@ -154,7 +154,7 @@ namespace ToDoList
             return tasks;
         }
 
-        static void SaveTasksToFile(string filename, List<string> tasks)
+        static void SaveTasksToFile(string filename, List<string> tasks) // saving tasks    
         { 
             try
             {
