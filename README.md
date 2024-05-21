@@ -12,7 +12,7 @@ what needs to be added -
 
 4. task catagories ✅
    
-6. Task priority 
+6. Task priority ✅
 
 7. task filtering and sorting 
 
