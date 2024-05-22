@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 
 namespace ToDoList
@@ -10,101 +11,56 @@ namespace ToDoList
         public string Description { get; set; } // get is to return property value and set is a new value
         public string Category { get; set; }
         public string Priority { get; set; }
+        public DateTime Deadline { get; set; }
 
-        public Task(string description, string category, string priority)
+        public Task(string description, string category, string priority, DateTime deadline)
         {
             Description = description;
             Category = category;
             Priority = priority;
+            Deadline = deadline;
+        }
+
+        public int DaysRemaining()
+        {
+            return (Deadline - DateTime.Now).Days;
         }
 
         public override string ToString()
         {
-            return $"{Description} ({Category}) - Priority: {Priority}";
+            return $"{Description} ({Category}) - Priority: {Priority}, Days remaining: {DaysRemaining()}";
         }
     }
 
-    public class userAuth //  login credentials
+    public static class userAuth //  login credentials
     {
         private const string Username = "user"; // this is the username to login
         private const string Password = "root"; // this is the password
 
         public static bool Authenticate(string inputUsername, string inputPassword) // checks if the username and password are correct
         {
-            return inputUsername.Trim() == Username && inputPassword.Trim() == Password; //white
+            return inputUsername.Trim() == Username && inputPassword.Trim() == Password; 
         }
     }
 
-    class Program
+    public class TaskManager
     {
-        static List<Task> tasks = new List<Task>();
+        public List<Task> Tasks { get; private set; } = new List<Task>();
 
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Login"); // user login
-
-            Console.Write("Enter Username: \n");
-            string username = Console.ReadLine().Trim(); // trim whitespace from input
-
-            Console.Write("Enter Password: \n");
-            string password = Console.ReadLine().Trim(); // trim whitespace from input
-
-            if (userAuth.Authenticate(username, password))
-            {
-                Console.Clear(); // clears previous messages
-                Console.WriteLine($"Authentication successful! welcome, {username} ");
-            }
-            else
-            {
-                Console.WriteLine("Incorrect username or password please try again"); // if credentials do not match
-                return; //exit 
-            }
-
-            tasks = LoadTasksFromFile("tasks.txt"); // loads any data which was stored 
-
-            Console.WriteLine("Welcome to the To-Do List App!\n");
-
-            while (true)
-            {
-                Console.WriteLine("Please select an option:");
-                Console.WriteLine("1. Add Task");
-                Console.WriteLine("2. View Tasks");
-                Console.WriteLine("3. Exit");
-
-                string choice = Console.ReadLine() ?? "";
-
-                switch (choice)
-                {
-                    case "1": // to add tasks
-                        AddTask();
-                        break;
-
-                    case "2": // to view tasks
-                        ViewTasks();
-                        break;
-
-                    case "3": // exit application and save tasks
-
-                        SaveTasksToFile("tasks.txt", tasks);
-                        Console.WriteLine("Exiting the To-Do List App. Goodbye!");
-                        return;
-
-                    default:
-                        Console.WriteLine("Invalid option. Please try again.\n");
-                        break;
-                }
-            }
+        public void LoadTasks(List<Task> tasks) 
+        { 
+            Tasks = tasks;
         }
 
-        static void AddTask()
+        public void AddTask()
         {
             Console.Write("Enter the task: ");
-            string description = Console.ReadLine() ?? ""; // Use null-coalescing operator
+            string description = Console.ReadLine()?.Trim() ?? ""; // Use null-coalescing operator
 
             Console.WriteLine("Select the category: ");
             Console.WriteLine("1. Work");
             Console.WriteLine("2. Personal");
-            string categoryChoice = Console.ReadLine() ?? "";
+            string categoryChoice = Console.ReadLine()?.Trim() ?? "";
 
             string category = categoryChoice switch
             {
@@ -117,33 +73,41 @@ namespace ToDoList
             Console.WriteLine("1. High");
             Console.WriteLine("2. Medium");
             Console.WriteLine("3. Low");
-            string priorityChoice = Console.ReadLine() ?? "";
+            string priorityChoice = Console.ReadLine()?.Trim() ?? "";
 
             string priority = priorityChoice switch
             {
                 "1" => "High",
                 "2" => "Medium",
                 "3" => "Low",
-                 _ => "Unspecified"
+                _ => "Unspecified"
             };
 
-            Task newTask = new Task(description, category, priority);
-            tasks.Add(newTask);
-            Console.WriteLine("Task connected sucessfully");
+            Console.Write("Enter the Deadline (yyyy-MM-dd): \n");
+            DateTime deadline;
+            while (!DateTime.TryParse(Console.ReadLine(), out deadline) || deadline < DateTime.Now)
+            {
+                Console.WriteLine("Invalid date or date has expired. Enter the deadline in this format please (yyyy-MM-dd): ");
+            }
+
+            Task newTask = new Task(description, category, priority, deadline);
+
+            Tasks.Add(newTask);
+            Console.WriteLine("Task connected sucessfully!");
         }
 
-        static void ViewTasks()
+        public void ViewTasks()
         {
-            if (tasks.Count == 0) // if there are no tasks detected then this will display
+            if (Tasks.Count == 0) // if there are no tasks detected then this will display
             {
                 Console.WriteLine("No tasks found\n");
                 return;
             }
 
             Console.WriteLine("Tasks:");
-            for (int i = 0; i < tasks.Count; i++) // tasks present 
+            for (int i = 0; i < Tasks.Count; i++) // tasks present 
             {
-                Console.WriteLine($"{i + 1}. {tasks[i]}");
+                Console.WriteLine($"{i + 1}. {Tasks[i]}");
             }
             Console.WriteLine();
 
@@ -151,7 +115,8 @@ namespace ToDoList
             Console.WriteLine("1. Delete a Task");
             Console.WriteLine("2. Update a Task");
             Console.WriteLine("3. Go back");
-            string option = Console.ReadLine() ?? ""; // reads user input and assigns to the number at the starts
+
+            string option = Console.ReadLine()?.Trim() ?? ""; // reads user input and assigns to the number at the starts
 
             switch (option)
             {
@@ -166,16 +131,16 @@ namespace ToDoList
                 default:
                     Console.WriteLine("Cant do that mate");
                     break;
-                }
             }
+        }
 
         // delete a task based on a number
-        static void DeleteTask()
+        public void DeleteTask()
         {
             Console.WriteLine("Enter the task number you would like to delete: ");
-            if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= tasks.Count)  // this string reads the users input and convert the string to an interger. If successful the method is set to 1 for true and if not it is set to 0. Then checks if larger than 0.
-            { 
-                tasks.RemoveAt(taskNumberToDelete - 1);
+            if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= Tasks.Count)  // this string reads the users input and convert the string to an interger. If successful the method is set to 1 for true and if not it is set to 0. Then checks if larger than 0.
+            {
+                Tasks.RemoveAt(taskNumberToDelete - 1);
                 Console.WriteLine("Task deleted successfully!\n");
             }
             else
@@ -185,20 +150,22 @@ namespace ToDoList
         }
 
         // update description and category of task
-        static void UpdateTask()
+        public void UpdateTask()
         {
             Console.Write("Enter the number of the task you want to update: ");
-            if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= tasks.Count)
+            if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= Tasks.Count)
             {
-                Task taskToUpdate = tasks[taskNumberToUpdate - 1];
+                Task taskToUpdate = Tasks[taskNumberToUpdate - 1];
                 Console.Write("Enter the new description: ");
-                taskToUpdate.Description = Console.ReadLine() ?? "";
+                taskToUpdate.Description = Console.ReadLine()?.Trim() ?? "";
 
 
                 Console.WriteLine("Select the new category: ");
                 Console.WriteLine("1. Work");
                 Console.WriteLine("2. Personal");
-                string categoryChoice = Console.ReadLine() ?? "";
+
+                string categoryChoice = Console.ReadLine()?.Trim() ?? "";
+
                 taskToUpdate.Category = categoryChoice switch
                 {
                     "1" => "Work",
@@ -206,11 +173,13 @@ namespace ToDoList
                     _ => taskToUpdate.Category
                 };
 
-                Console.WriteLine("Select the priority");
+                Console.WriteLine("Select the priority: ");
                 Console.WriteLine("1. High");
                 Console.WriteLine("2. Medium");
                 Console.WriteLine("3. Low");
-                string priorityChoice = Console.ReadLine() ?? "";
+
+                string priorityChoice = Console.ReadLine()?.Trim() ?? "";
+
                 taskToUpdate.Priority = priorityChoice switch
                 {
                     "1" => "High",
@@ -221,32 +190,40 @@ namespace ToDoList
                 };
 
 
+                Console.WriteLine("Please enter the new deadline (yyyy-MM-dd): ");
+                DateTime deadline;
+                while (!DateTime.TryParse(Console.ReadLine(), out deadline) || deadline < DateTime.Now)
+                {
+                    Console.WriteLine("Invalid or expired date used. Please enter a valid date (yyyy-MM-DD): ");
+                }
+                taskToUpdate.Deadline = deadline;
 
                 Console.WriteLine("Task Updated Successfully!\n");
             }
             else
             {
-                Console.WriteLine("Dunno mate \n"); // if something unexpected happpens
+                Console.WriteLine("Computer says nooo\n"); // if something unexpected happpens
             }
-
         }
-
+    }
+        
+    public static class FileManager
+    {
         // load tasks from file including categories
-        static List<Task> LoadTasksFromFile(string filename)
+        public static List<Task> LoadTasksFromFile(string filename)
         {
             List<Task> tasks = new List<Task>();
             try
             {
                 if (File.Exists(filename))
-
                 {
                     string[] lines = File.ReadAllLines(filename);
                     foreach (var line in lines)
                     {
                         string[] parts = line.Split('|');
-                        if (parts.Length == 3)
+                        if (parts.Length == 4 && DateTime.TryParse(parts[3], out DateTime deadline))
                         {
-                            tasks.Add(new Task(parts[0], parts[1], parts[2]));
+                            tasks.Add(new Task(parts[0], parts[1], parts[2], deadline));
                         }
                     }
                 }
@@ -259,7 +236,7 @@ namespace ToDoList
         }
 
         // save tasks to file, including categories
-        static void SaveTasksToFile(string filename, List<Task> tasks)
+        public static void SaveTasksToFile(string filename, List<Task> tasks)
         {
             try
             {
@@ -267,13 +244,72 @@ namespace ToDoList
                 foreach (var task in tasks)
 
                 {
-                    lines.Add($"{task.Description}|{task.Category}|{task.Priority}");
+                    lines.Add($"{task.Description}|{task.Category}|{task.Priority}|{task.Deadline:yyyy-MM-dd}");
                 }
                 File.WriteAllLines(filename, lines);
             }
             catch (IOException ex)
             {
                 Console.WriteLine($"Error saving tasks: {ex.Message}");
+            }
+        }
+        }
+        class Program
+        {
+            static void Main(string[] args)
+        {
+            TaskManager taskManager = new TaskManager();
+
+            Console.WriteLine("Login"); // user login
+
+            Console.Write("Enter Username: \n");
+            string username = Console.ReadLine()?.Trim(); // trim whitespace from input
+
+            Console.Write("Enter Password: \n");
+            string password = Console.ReadLine()?.Trim(); // trim whitespace from input
+
+            if (userAuth.Authenticate(username, password))
+            {
+                Console.Clear(); // clears previous messages
+                Console.WriteLine($"Authentication successful! welcome, {username} ");
+            }
+            else
+            {
+                Console.WriteLine("Incorrect username or password please try again"); // if credentials do not match
+                return; //exit 
+            }
+
+            taskManager.LoadTasks(FileManager.LoadTasksFromFile("tasks.txt")); // load tasks from file
+
+            Console.WriteLine("Welcome to the To-Do list app \n ");
+
+            while (true)
+            { 
+                Console.WriteLine("Please select a option: ");
+                Console.WriteLine("1. Add Task");
+                Console.WriteLine("2. View Tasks");
+                Console.WriteLine("3. Exit");
+                string choice = Console.ReadLine() ?? "";
+
+                switch (choice)
+                {
+                    case "1":
+                        taskManager.AddTask();
+                        break;
+                    case "2":
+                        taskManager.ViewTasks();
+                        break;
+                    case "3":
+                        FileManager.SaveTasksToFile("tasks.txt", taskManager.Tasks);
+                        Console.WriteLine("Exiting the To-Do List App. G'bye");
+                        return;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid option. please try again. \n");
+                        break;
+                    
+                }
             }
         }
     }
