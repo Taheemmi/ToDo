@@ -14,6 +14,6 @@ what needs to be added -
    
 6. Task priority ✅
 
-7. task filtering and sorting 
+7. task filtering and sorting ✅
 
 8. Deadline managment ✅
