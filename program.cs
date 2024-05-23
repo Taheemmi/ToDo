@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq; // importing for LINQ 
 using System.Threading.Tasks;
+
 
 
 namespace ToDoList
@@ -13,22 +15,22 @@ namespace ToDoList
         public string Priority { get; set; }
         public DateTime Deadline { get; set; }
 
-        public Task(string description, string category, string priority, DateTime deadline)
+        public Task(string description, string category, string priority, DateTime deadline) // this lists all the factors which go into a todo note and assigns it to the respected string
         {
-            Description = description;
+            Description = description; // defining variables but with the first letter as a upper case
             Category = category;
             Priority = priority;
             Deadline = deadline;
         }
 
-        public int DaysRemaining()
+        public int DaysRemaining() 
         {
-            return (Deadline - DateTime.Now).Days;
+            return (Deadline - DateTime.Now).Days; // from the users input it calculates how many days are remaining to the system date
         }
 
         public override string ToString()
         {
-            return $"{Description} ({Category}) - Priority: {Priority}, Days remaining: {DaysRemaining()}";
+            return $"{Description} ({Category}) - Priority: {Priority}, Days remaining: {DaysRemaining()}"; // format on how the task will be displayed
         }
     }
 
@@ -43,7 +45,7 @@ namespace ToDoList
         }
     }
 
-    public class TaskManager
+    public class TaskManager // not to be confused with the actual task manager lol
     {
         public List<Task> Tasks { get; private set; } = new List<Task>();
 
@@ -55,9 +57,16 @@ namespace ToDoList
         public void AddTask()
         {
             Console.Write("Enter the task: ");
-            string description = Console.ReadLine()?.Trim() ?? ""; // Use null-coalescing operator
+            string description = Console.ReadLine()?.Trim() ?? ""; 
 
-            Console.WriteLine("Select the category: ");
+            /* for every user input, I use ' ?.Trim() ?? '
+             * ?. checks if the value is not null before trying to call Trim().
+             * Trim() removes spaces at the start and end of the string.
+             * ?? returns the value on the left unless it is null
+             * "" is returned if nothing on the left is inserted
+             */
+
+            Console.WriteLine("Select the category: "); 
             Console.WriteLine("1. Work");
             Console.WriteLine("2. Personal");
             string categoryChoice = Console.ReadLine()?.Trim() ?? "";
@@ -105,40 +114,148 @@ namespace ToDoList
             }
 
             Console.WriteLine("Tasks:");
-            for (int i = 0; i < Tasks.Count; i++) // tasks present 
+            DisplayTasks(Tasks);
+
+            while (true)
+
             {
-                Console.WriteLine($"{i + 1}. {Tasks[i]}");
+                Console.WriteLine("Select an option: ");
+                Console.WriteLine("1. Filter Tasks");
+                Console.WriteLine("2. Sort Tasks");
+                Console.WriteLine("3. Delete a Task");
+                Console.WriteLine("4. Update a Task");
+                Console.WriteLine("5. Go back");
+
+                string option = Console.ReadLine()?.Trim() ?? ""; // reads user input and assigns to the number at the starts
+
+                switch (option)
+                {
+                    case "1":
+                        FilterTasks();
+                        break;
+                    case "2":
+                        SortTasks();
+                        break;
+                    case "3":
+                        DeleteTask();
+                        break;
+                    case "4":
+                        UpdateTask();
+                        break;
+                    case "5":
+                        return;
+                    default:
+                        Console.WriteLine("Cant do that mate");
+                        break;
+                }
+            }
+
+        }
+
+        private void DisplayTasks(List<Task> tasks)
+        {
+            for (int i = 0; i < tasks.Count; i++) // tasks present
+            {
+                Console.WriteLine($"{i + 1}. {tasks[i]}");
             }
             Console.WriteLine();
+        }
 
-            Console.WriteLine("Select an option: ");
-            Console.WriteLine("1. Delete a Task");
-            Console.WriteLine("2. Update a Task");
-            Console.WriteLine("3. Go back");
 
-            string option = Console.ReadLine()?.Trim() ?? ""; // reads user input and assigns to the number at the starts
+        private void FilterTasks()
+        {
+            Console.WriteLine("Filter By: ");
+            Console.WriteLine("1. Catagory");
+            Console.WriteLine("2. Priority");
+            string filterChoice = Console.ReadLine()?.Trim() ?? "";
 
-            switch (option)
+            List<Task> filteredTasks;
+
+            switch (filterChoice)
             {
                 case "1":
-                    DeleteTask();
+                    Console.Write("Enter Catagory (Work, Personal, SideQuests): ");
+                    string category = Console.ReadLine()?.Trim() ?? "";
+                    filteredTasks = FilterByCategory(category);
                     break;
                 case "2":
-                    UpdateTask();
-                    break;
-                case "3":
+                    Console.Write("Enter priority(High, Medium, Low, Unspecified): ");
+                    string priority = Console.ReadLine()?.Trim() ?? "";
+                    filteredTasks = FilterByPriority(priority);
                     break;
                 default:
-                    Console.WriteLine("Cant do that mate");
-                    break;
+                    Console.WriteLine("Computer says no");
+                    return;
             }
+            Console.WriteLine("Filtered Tasks: ");
+            DisplayTasks(filteredTasks);
+        }
+
+        private void SortTasks()
+        {
+            Console.WriteLine("Sort by:");
+            Console.WriteLine("1. Deadline (Ascending)");
+            Console.WriteLine("2. Deadline (Decending)");
+            Console.WriteLine("3. Priority");
+            string sortChoice = Console.ReadLine()?.Trim();
+
+            List<Task> sortedTasks;
+
+            switch (sortChoice) 
+            {
+                case "1":
+                    sortedTasks = SortByDeadline(true);
+                    break;
+                case "2":
+                    sortedTasks = SortByDeadline(false);
+                    break;
+                case "3":
+                    sortedTasks = SortByPriority();
+                    break;
+                default:
+                    Console.WriteLine("Invalid sort option");
+                    return;
+            }
+
+            Console.WriteLine("Sorted Tasks:");
+            DisplayTasks(sortedTasks);
+        }
+
+        //Filter tasks by category
+        public List<Task> FilterByCategory(string category)
+        {
+            return Tasks.Where(task => task.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        // Filter Tasks by priority
+        public List<Task> FilterByPriority(string priority)
+        {
+            return Tasks.Where(task => task.Priority.Equals(priority, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        // sort tasks by deadline 
+        public List<Task> SortByDeadline(bool ascending = true)
+        {
+            return ascending ? Tasks.OrderBy(task => task.Deadline).ToList() : Tasks.OrderByDescending(task => task.Deadline).ToList();
+        }
+
+        // sort tasks by priority
+        public List<Task> SortByPriority()
+        {
+            return Tasks.OrderBy(task => task.Priority).ToList();
         }
 
         // delete a task based on a number
         public void DeleteTask()
         {
             Console.WriteLine("Enter the task number you would like to delete: ");
-            if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= Tasks.Count)  // this string reads the users input and convert the string to an interger. If successful the method is set to 1 for true and if not it is set to 0. Then checks if larger than 0.
+            if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= Tasks.Count)
+            /* // this string reads the users input and converts the string to an integer. 
+             * If successful, the method is set to 1 for true. if not it is set to 0. 
+             * Then checks if larger than 0.
+             */
+
+
             {
                 Tasks.RemoveAt(taskNumberToDelete - 1);
                 Console.WriteLine("Task deleted successfully!\n");
@@ -188,7 +305,6 @@ namespace ToDoList
                     _ => taskToUpdate.Priority
 
                 };
-
 
                 Console.WriteLine("Please enter the new deadline (yyyy-MM-dd): ");
                 DateTime deadline;
@@ -313,4 +429,6 @@ namespace ToDoList
             }
         }
     }
+
 }
+
