@@ -66,12 +66,12 @@ namespace ToDoList
              * "" is returned if nothing on the left is inserted
              */
 
-            Console.WriteLine("Select the category: "); 
+            Console.WriteLine("Select the category: ");  
             Console.WriteLine("1. Work");
             Console.WriteLine("2. Personal");
             string categoryChoice = Console.ReadLine()?.Trim() ?? "";
 
-            string category = categoryChoice switch
+            string category = categoryChoice switch // saves user entry and then goes to next
             {
                 "1" => "Work",
                 "2" => "Personal",
@@ -84,7 +84,7 @@ namespace ToDoList
             Console.WriteLine("3. Low");
             string priorityChoice = Console.ReadLine()?.Trim() ?? "";
 
-            string priority = priorityChoice switch
+            string priority = priorityChoice switch // saves user entry and then goes to next
             {
                 "1" => "High",
                 "2" => "Medium",
@@ -92,14 +92,14 @@ namespace ToDoList
                 _ => "Unspecified"
             };
 
-            Console.Write("Enter the Deadline (yyyy-MM-dd): \n");
+            Console.Write("Enter the Deadline (yyyy-MM-dd): \n"); // user will enter the date that the task needs to be done by and saves as deadline.
             DateTime deadline;
-            while (!DateTime.TryParse(Console.ReadLine(), out deadline) || deadline < DateTime.Now)
+            while (!DateTime.TryParse(Console.ReadLine(), out deadline) || deadline < DateTime.Now) // this will calculate the date set and how long it is from the current date.
             {
-                Console.WriteLine("Invalid date or date has expired. Enter the deadline in this format please (yyyy-MM-dd): ");
+                Console.WriteLine("Invalid date or date has expired. Enter the deadline in this format please (yyyy-MM-dd): "); // throw an error.
             }
 
-            Task newTask = new Task(description, category, priority, deadline);
+            Task newTask = new Task(description, category, priority, deadline); // this will add all of the information together and bundle it to one line where the infromation is stored for that task.
 
             Tasks.Add(newTask);
             Console.WriteLine("Task connected sucessfully!");
