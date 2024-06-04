@@ -2,9 +2,119 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
- 
+using System.Security.Cryptography;
+using System.Text;
+
+public static class PasswordHasher
+{
+    public static string HashPassword(string password)
+    {
+        // create a salt value with a cryptographic PRNG
+        byte[] salt = new byte[16];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(salt);
+        }
+
+        // derive a 256-bit subkey (use HMACSHA256 with 100,000 iterations)
+        byte[] hash;
+        using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000, HashAlgorithmName.SHA256))
+        {
+            hash = pbkdf2.GetBytes(32);
+        }
+
+        // Combine the salt and password bytes for later use
+        byte[] hashBytes = new byte[48];
+        Array.Copy(salt, 0, hashBytes, 0, 16);
+        Array.Copy(hash, 0, hashBytes, 16, 32);
+
+        string savedPasswordHash = HexEncoding.ToHexString(hashBytes);
+        return savedPasswordHash;
+    }
+
+    public static bool VerifyPassword(string savedPasswordHash, string inputPassword)
+    {
+        if (string.IsNullOrEmpty(savedPasswordHash))
+        {
+            throw new ArgumentException("Invalid saved password hash");
+        }
+
+        byte[] hashBytes;
+        try
+        {
+            hashBytes = HexEncoding.FromHexString(savedPasswordHash);
+        }
+        catch (Exception)
+        {
+            throw new ArgumentException("Invalid HexBug string for saved password hash");
+        }
+
+        if (hashBytes.Length != 48)
+        {
+            throw new ArgumentException("Invalid length of the hexbug");
+        }
+
+        // get the salt
+        byte[] salt = new byte[16];
+        Array.Copy(hashBytes, 0, salt, 0, 16);
+
+        // compute the hash on the input password
+        byte[] hash;
+        using (var pbkdf2 = new Rfc2898DeriveBytes(inputPassword, salt, 100000, HashAlgorithmName.SHA256))
+        {
+            hash = pbkdf2.GetBytes(32);
+        }
+
+        // compare the results
+        for (int i = 0;  i < 32; i++)
+        {
+            if (hashBytes[i + 16] != hash[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+}
+
+public static class HexEncoding
+{
+    public static string ToHexString(byte[] bytes)
+    {
+        char[] c = new char[bytes.Length * 2];
+        byte b;
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            b = ((byte)(bytes[i] >> 4));
+            c[i * 2] = (char)(55 + b + (((b - 10) >> 31) & -7));
+            b = ((byte)(bytes[i] & 0xF));
+            c[i * 2 + 1] = (char)(55 + b + (((b - 10) >> 31) & -7)); 
+        }
+        return new string(c);
+    }
+    public static byte[] FromHexString(string hex)
+    {
+        if (hex.Length % 2 != 0)
+        {
+            throw new ArgumentException("Invalid hexbug string length");
+        }
+
+        byte[] bytes = new byte[hex.Length / 2];
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+        }
+        return bytes;
+    }
+}
+
 namespace ToDoList
 {
+
+
+
+
     public class Task
     {
         public string Description { get; set; } // get is to return property value and set is a new value
@@ -79,7 +189,7 @@ namespace ToDoList
                 _ => "Unspecified"
             };
 
-            Console.Write("Enter the Deadline (yyyy-MM-dd): \n");
+            Console.Write("Enter the Deadline (yyyy-MM-dd): \n"); // function to add date at the end of the task and calculate the days remaingin
             DateTime deadline;
             while (!DateTime.TryParse(Console.ReadLine(), out deadline) || deadline < DateTime.Now)
             {
@@ -180,7 +290,7 @@ namespace ToDoList
             Console.WriteLine("1. Deadline (Ascending)");
             Console.WriteLine("2. Deadline (Descending)");
             Console.WriteLine("3. Priority");
-            string sortChoice = Console.ReadLine()?.Trim();
+            string sortChoice = Console.ReadLine()?? "".Trim();
 
             List<Task> sortedTasks;
 
@@ -395,7 +505,7 @@ namespace ToDoList
 
         public static bool Authenticate(string inputUsername, string inputPassword)
         {
-            return Users.Any(user => user.Username == inputUsername && user.Password == inputPassword);
+            return Users.Any(user => user.Username == inputUsername && PasswordHasher.VerifyPassword(user.Password, inputPassword));
         }
 
         public static bool SignUp(string newUsername, string newPassword)
@@ -405,7 +515,8 @@ namespace ToDoList
                 return false;
             }
 
-            Users.Add(new User(newUsername, newPassword));
+            string hashedPassword = PasswordHasher.HashPassword(newPassword);
+            Users.Add(new User(newUsername, hashedPassword));
             FileManager.SaveUsersToFile("Users.txt", Users);
             return true;
         }
@@ -486,10 +597,10 @@ namespace ToDoList
         static bool Login()
         {
             // Method to login a user
-            Console.Write("Enter Username: ");
+            Console.Write("Enter Username:");
             string username = Console.ReadLine()?.Trim() ?? "";
 
-            Console.Write("Enter Password: ");
+            Console.Write("Enter Password:");
             string password = Console.ReadLine()?.Trim() ?? "";
 
             return UserAuth.Authenticate(username, password);
@@ -498,10 +609,10 @@ namespace ToDoList
         static void SignUp()
         {
             // Method to sign up a new user
-            Console.Write("Enter new Username: ");
+            Console.Write("Enter new Username:");
             string username = Console.ReadLine()?.Trim() ?? "";
 
-            Console.Write("Enter new Password: ");
+            Console.Write("Enter new Password:");
             string password = Console.ReadLine()?.Trim() ?? "";
 
             if (UserAuth.SignUp(username, password))
