@@ -7,31 +7,34 @@ using System.Text;
 
 public static class PasswordHasher
 {
+    // This method hashes a password using PBKDF2 with SHA256 and returns the hashed password as a hex string.
     public static string HashPassword(string password)
     {
-        // create a salt value with a cryptographic PRNG
+        // Generate a 128-bit salt using a cryptographic random number generator.
         byte[] salt = new byte[16];
         using (var rng = RandomNumberGenerator.Create())
         {
             rng.GetBytes(salt);
         }
 
-        // derive a 256-bit subkey (use HMACSHA256 with 100,000 iterations)
+        // Derive a 256-bit subkey (hash) using PBKDF2 with SHA256, the generated salt, and 100,000 iterations.
         byte[] hash;
         using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000, HashAlgorithmName.SHA256))
         {
             hash = pbkdf2.GetBytes(32);
         }
 
-        // Combine the salt and password bytes for later use
+        // Combine the salt and the hash into a single byte array.
         byte[] hashBytes = new byte[48];
         Array.Copy(salt, 0, hashBytes, 0, 16);
         Array.Copy(hash, 0, hashBytes, 16, 32);
 
+        // Convert the byte array to a hex string and return it.
         string savedPasswordHash = HexEncoding.ToHexString(hashBytes);
         return savedPasswordHash;
     }
 
+    // This method verifies if the input password matches the hashed password.
     public static bool VerifyPassword(string savedPasswordHash, string inputPassword)
     {
         if (string.IsNullOrEmpty(savedPasswordHash))
@@ -42,6 +45,7 @@ public static class PasswordHasher
         byte[] hashBytes;
         try
         {
+            // Convert the saved password hash from hex string to byte array.
             hashBytes = HexEncoding.FromHexString(savedPasswordHash);
         }
         catch (Exception)
@@ -54,23 +58,23 @@ public static class PasswordHasher
             throw new ArgumentException("Invalid length of the hexbug");
         }
 
-        // get the salt
+        // Extract the salt from the first 16 bytes of the hashBytes.
         byte[] salt = new byte[16];
         Array.Copy(hashBytes, 0, salt, 0, 16);
 
-        // compute the hash on the input password
+        // Derive the hash from the input password using the extracted salt and the same parameters.
         byte[] hash;
         using (var pbkdf2 = new Rfc2898DeriveBytes(inputPassword, salt, 100000, HashAlgorithmName.SHA256))
         {
             hash = pbkdf2.GetBytes(32);
         }
 
-        // compare the results
+        // Compare the derived hash with the saved hash.
         for (int i = 0;  i < 32; i++)
         {
             if (hashBytes[i + 16] != hash[i])
             {
-                return false;
+                return false; // Return false if any byte doesn't match.
             }
         }
         return true;
@@ -80,6 +84,7 @@ public static class PasswordHasher
 
 public static class HexEncoding
 {
+    // This method converts a byte array to a hex string.
     public static string ToHexString(byte[] bytes)
     {
         char[] c = new char[bytes.Length * 2];
@@ -93,6 +98,7 @@ public static class HexEncoding
         }
         return new string(c);
     }
+    // This method converts a hex string to a byte array.
     public static byte[] FromHexString(string hex)
     {
         if (hex.Length % 2 != 0)
