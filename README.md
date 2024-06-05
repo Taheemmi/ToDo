@@ -19,7 +19,7 @@ includes -
 
 
 username: user
-
-
-
 password: root
+________________________________________________________________________________
+
+Update: The advanced folder is where i am adding password hashing and also tasks which are linked to the user. Currently the version uploaded has user loggin and able to hash password to not store them as plain text. 
