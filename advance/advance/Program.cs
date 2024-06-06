@@ -26,10 +26,6 @@ namespace ToDoList
                     // User authentication loop
                     case "1":
                         authenticated = Login(taskManager);
-                        if (authenticated)
-                        {
-                            currentUser = Console.ReadLine();
-                        }
                         break;
                     case "2":
                         SignUp();
