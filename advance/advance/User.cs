@@ -1,4 +1,5 @@
 using System;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -6,11 +7,13 @@ public class User
 {
     public string Username { get; set; }
     public string Password { get; set; }
+    public List<Task> Tasks { get; set; }
 
     public User(string username, string password)
     {
         Username = username;
         Password = password;
+        Tasks = new List<Task>();
     }
 }
 
@@ -31,11 +34,14 @@ public static class UserAuth
         }
 
         string hashedPassword = PasswordHasher.HashPassword(newPassword);
-        Users.Add(new User(newUsername, hashedPassword));
+        User newUser = new User(newUsername, hashedPassword);
+        Users.Add(newUser);
         TaskManager.SaveUsersToFile("Users.txt", Users);
         return true;
     }
 }
+
+
 
 public static class PasswordHasher
 {
