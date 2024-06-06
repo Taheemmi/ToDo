@@ -9,13 +9,15 @@ public class Task
     public string Category { get; set; }
     public string Priority { get; set; }
     public DateTime Deadline { get; set; }
+    public string Username { get; set; }
 
-    public Task(string description, string category, string priority, DateTime deadline)
+    public Task(string description, string category, string priority, DateTime deadline, string username)
     {
         Description = description;
         Category = category;
         Priority = priority;
         Deadline = deadline;
+        Username = username;
     }
 
     public int DaysRemaining()
@@ -25,7 +27,7 @@ public class Task
 
     public override string ToString()
     {
-        return $"{Description} ({Category}) - Priority: {Priority}, Days remaining: {DaysRemaining()}";
+        return $"{Description} ({Category}) - Priority: {Priority}, Days remaining: {DaysRemaining()}, Created by: {Username}";
     }
 }
 
@@ -33,6 +35,7 @@ public class TaskManager
 {
     public List<Task> Tasks = new List<Task>();
     public List<User> users = new List<User>();
+    public string CurrentUser { get; set; }
 
     public void LoadTasksFromFile(string filePath)
     {
@@ -44,29 +47,29 @@ public class TaskManager
             foreach (string line in lines)
             {
                 string[] parts = line.Split('|');
-                if (parts.Length == 4)
+                if (parts.Length == 5)
                 {
                     string description = parts[0];
                     string category = parts[1];
                     string priority = parts[2];
                     DateTime deadline = DateTime.ParseExact(parts[3], "yyyy-MM-dd", null);
-                    Task task = new Task(description, category, priority, deadline);
+                    string username = parts[4];
+                    Task task = new Task(description, category, priority, deadline, username);
                     Tasks.Add(task);
                 }
             }
         }
     }
-    public static void SavetasksToFile(string filename, List<Task> tasks)
+
+    public static void SaveTasksToFile(string filename, List<Task> tasks)
     {
         List<string> lines = new List<string>();    
         foreach (var task in tasks)
         {
-            lines.Add($"{task.Description}|{task.Category}|{task.Priority}|{task.Deadline:yyyy-MM-dd}");
+            lines.Add($"{task.Description}|{task.Category}|{task.Priority}|{task.Deadline:yyyy-MM-dd}|{task.Username}");
         }
         File.WriteAllLines(filename, lines);
     }
-
-
 
     public void AddTask()
     {
@@ -113,21 +116,23 @@ public class TaskManager
             Console.WriteLine("Invalid date or date has expired. Enter the deadline in this format please (yyyy-MM-dd): ");
         }
 
-        Task newTask = new Task(description, category, priority, deadline);
+        Task newTask = new Task(description, category, priority, deadline, CurrentUser);
         Tasks.Add(newTask);
         Console.WriteLine("Task added successfully!");
     }
 
     public void ViewTasks()
     {
-        if (Tasks.Count == 0)
+        var userTasks = Tasks.Where(t => t.Username == CurrentUser).ToList();
+
+        if (userTasks.Count == 0)
         {
             Console.WriteLine("No tasks found\n");
             return;
         }
 
         Console.WriteLine("Tasks:");
-        DisplayTasks(Tasks);
+        DisplayTasks(userTasks);
 
         while (true)
         {
@@ -233,30 +238,32 @@ public class TaskManager
 
     public List<Task> FilterByCategory(string category)
     {
-        return Tasks.Where(task => task.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+        return Tasks.Where(task => task.Category.Equals(category, StringComparison.OrdinalIgnoreCase) && task.Username == CurrentUser).ToList();
     }
 
     public List<Task> FilterByPriority(string priority)
     {
-        return Tasks.Where(task => task.Priority.Equals(priority, StringComparison.OrdinalIgnoreCase)).ToList();
+        return Tasks.Where(task => task.Priority.Equals(priority, StringComparison.OrdinalIgnoreCase) && task.Username == CurrentUser).ToList();
     }
 
     public List<Task> SortByDeadline(bool ascending = true)
     {
-        return ascending ? Tasks.OrderBy(task => task.Deadline).ToList() : Tasks.OrderByDescending(task => task.Deadline).ToList();
+        return ascending ? Tasks.Where(task => task.Username == CurrentUser).OrderBy(task => task.Deadline).ToList() : Tasks.Where(task => task.Username == CurrentUser).OrderByDescending(task => task.Deadline).ToList();
     }
 
     public List<Task> SortByPriority()
     {
-        return Tasks.OrderBy(task => task.Priority).ToList();
+        return Tasks.Where(task => task.Username == CurrentUser).OrderBy(task => task.Priority).ToList();
     }
 
     public void DeleteTask()
     {
         Console.Write("Enter the task number you would like to delete: ");
-        if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= Tasks.Count)
+        var userTasks = Tasks.Where(t => t.Username == CurrentUser).ToList();
+
+        if (int.TryParse(Console.ReadLine(), out int taskNumberToDelete) && taskNumberToDelete > 0 && taskNumberToDelete <= userTasks.Count)
         {
-            Tasks.RemoveAt(taskNumberToDelete - 1);
+            Tasks.Remove(userTasks[taskNumberToDelete - 1]);
             Console.WriteLine("Task deleted successfully!\n");
         }
         else
@@ -268,9 +275,10 @@ public class TaskManager
     public void UpdateTask()
     {
         Console.Write("Enter the number of the task you want to update: ");
-        if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= Tasks.Count)
+        var userTasks = Tasks.Where(t => t.Username == CurrentUser).ToList();
+        if (int.TryParse(Console.ReadLine(), out int taskNumberToUpdate) && taskNumberToUpdate > 0 && taskNumberToUpdate <= userTasks.Count)
         {
-            Task taskToUpdate = Tasks[taskNumberToUpdate - 1];
+            Task taskToUpdate = userTasks[taskNumberToUpdate - 1];
             Console.Write("Enter the new description: ");
             taskToUpdate.Description = Console.ReadLine()?.Trim() ?? "";
 
