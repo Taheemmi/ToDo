@@ -12,6 +12,7 @@ namespace ToDoList
             Console.WriteLine("Welcome to my To-Do List app");
 
             bool authenticated = false;
+            string currentUser = string.Empty;
 
             while (!authenticated)
             {
@@ -24,7 +25,11 @@ namespace ToDoList
                 {
                     // User authentication loop
                     case "1":
-                        authenticated = Login();
+                        authenticated = Login(taskManager);
+                        if (authenticated)
+                        {
+                            currentUser = Console.ReadLine();
+                        }
                         break;
                     case "2":
                         SignUp();
@@ -64,7 +69,7 @@ namespace ToDoList
                         taskManager.ViewTasks();
                         break;
                     case "3":
-                        TaskManager.SavetasksToFile("tasks.txt", taskManager.Tasks);
+                        TaskManager.SaveTasksToFile("tasks.txt", taskManager.Tasks);
                         Console.WriteLine("Exiting the To-Do List App. Goodbye!");
                         return;
                     default:
@@ -74,7 +79,7 @@ namespace ToDoList
             }
         }
 
-        static bool Login()
+        static bool Login(TaskManager taskManager)
         {
             // Method to login a user
             Console.Write("Enter Username:");
@@ -83,7 +88,13 @@ namespace ToDoList
             Console.Write("Enter Password:");
             string password = Console.ReadLine()?.Trim() ?? "";
 
-            return UserAuth.Authenticate(username, password);
+            bool isAuthenticated = UserAuth.Authenticate(username, password);
+            if (isAuthenticated)
+            {
+                taskManager.CurrentUser = username;
+            }
+
+            return isAuthenticated;
         }
 
         static void SignUp()
