@@ -23,3 +23,5 @@ password: root
 ________________________________________________________________________________
 
 Update: The advanced folder is where i am adding password hashing and also tasks which are linked to the user. Currently the version uploaded has user log in and able to hash password to not store them as plain text. But users can see other tasks, currently I am figuring out a solution where the userauthentication, program and task manager are separate to help me learn how to combine files together to make an application.
+
+Update 2: The application works and is fully functional. I will look into making a graphical user interface. 
