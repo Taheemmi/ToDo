@@ -1,0 +1,32 @@
+﻿<Window x:Class="AddTask.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ToDo List" Height="350" Width="525">
+    <Grid>
+        <!-- Task Name TextBox -->
+        <TextBox HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="200" Name="taskNameTextBox" TextChanged="TaskNameTextBox_TextChanged"/>
+        <TextBlock Text="Enter Task Name" HorizontalAlignment="Left" Margin="15,10,0,0" VerticalAlignment="Top" Foreground="Gray" Name="placeholderTextBlock" Visibility="Collapsed"/>
+
+        <!-- Category DropDown -->
+        <ComboBox HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Width="200" Name="categoryComboBox">
+            <ComboBoxItem>Work</ComboBoxItem>
+            <ComboBoxItem>Personal</ComboBoxItem>
+            <ComboBoxItem>Unspecified</ComboBoxItem>
+            <!-- Add more categories as needed -->
+        </ComboBox>
+
+        <!-- Priority DropDown -->
+        <ComboBox HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Width="200" Name="priorityComboBox">
+            <ComboBoxItem>High</ComboBoxItem>
+            <ComboBoxItem>Medium</ComboBoxItem>
+            <ComboBoxItem>Low</ComboBoxItem>
+            <!-- Adjust priority levels as needed -->
+        </ComboBox>
+
+        <!-- Calendar Control -->
+        <Calendar HorizontalAlignment="Left" Margin="10,100,0,0" VerticalAlignment="Top" Width="200" Name="taskCalendar"/>
+
+
+        <Button Content="Add Task" Margin="379,301,0,0" Click="AddTask"/>
+    </Grid>
+</Window>
