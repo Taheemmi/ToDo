@@ -1,0 +1,23 @@
+<Window x:Class="ToDoListApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Todo List App" Height="350" Width="525">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="5">
+            <TextBox x:Name="newTodoTextBox" Width="300" Margin="5"/>
+            <Button x:Name="addButton" Content="Add Todo" Margin="5" Click="addButton_Click" />
+        </StackPanel>
+
+        <ListBox x:Name="taskList" Grid.Row="1" Margin="5" DisplayMemberPath="Text"/>
+    </Grid>
+</Window>
+    
