@@ -27,3 +27,5 @@ Update: The advanced folder is where i am adding password hashing and also tasks
 Update 2: The application works and is fully functional. I will look into making a graphical user interface. 
 
 13/06/2024 - I am currently making a gui based application which is very janky at this moment, just about got it to enter and display tasks but i plan on having the whole application in the advanced folder to have a GUI. However, there is alot to go through and will need changes which requires the project to be done by scratch. I may find a way to glue the gui with my existing functions but I am sure that i will need to do it from the ground up.
+
+hello
